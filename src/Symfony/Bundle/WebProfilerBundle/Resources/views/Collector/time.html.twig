@@ -423,6 +423,11 @@
         elementThresholdControl.onclick  = canvasAutoUpdateOnThresholdChange;
         elementThresholdControl.onchange = canvasAutoUpdateOnThresholdChange;
         elementThresholdControl.onkeyup  = canvasAutoUpdateOnThresholdChange;
+
+        window.setTimeout(function() {
+            canvasAutoUpdateOnThresholdChange(null);
+        }, 50);
+
     //]]></script>
 {% endblock %}
 

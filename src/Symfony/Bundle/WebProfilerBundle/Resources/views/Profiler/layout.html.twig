@@ -2,9 +2,7 @@
 
 {% block body %}
 
-    {% render 'WebProfilerBundle:Profiler:toolbar' with { 'token': token, 'position': 'normal' } %}
-
-    <div id="content">
+    <div id="content" style="margin-bottom: 20px;">
         {% include 'WebProfilerBundle:Profiler:header.html.twig' only %}
 
         <div id="main">
@@ -44,9 +42,9 @@
                                 {% endif %}
                             {% endfor %}
                             <li class="minimize">
-                                <a href="javascript:minimizeLeftPanels();void(0);">
+                                <a href="javascript:void(0);" title="Minimize toolbar" onclick="return minimizeLeftPanels();">
                                     <span class="label">
-                                        <span class="icon"><img id="minimizePanelIcon" src="{{ asset('bundles/webprofiler/images/profiler/left-arrow.png') }}" alt="" /></span>
+                                        <span class="icon"><img id="minimizePanelIcon" src="{{ asset('bundles/webprofiler/images/profiler/up-arrow.png') }}" alt="" /></span>
                                         <strong>Minimize</strong>
                                     </span>
                                 </a>
@@ -62,24 +60,47 @@
 
     <script type="text/javascript">//<![CDATA[
 
+        function setCookie(name, value, timeout) {
+            var exdate=new Date();
+            exdate.setDate(exdate.getDate() + timeout);
+            value = value + ((timeout==null) ? "" : "; expires="+exdate.toUTCString());
+
+            document.cookie = name + "=" + value;
+        }
+
+        function getCookie(name) {
+            var i, x, y, cookies = document.cookie.split(";");
+
+            for (i=0;i<cookies.length;i++) {
+                x = cookies[i].substr(0,cookies[i].indexOf("="));
+                y = cookies[i].substr(cookies[i].indexOf("=")+1);
+                x = x.replace(/^\s+|\s+$/g,"");
+                if (x == name) {
+                    return y;
+                }
+            }
+
+            return null;
+        }
+
         function minimizeLeftPanels() {
-            var leftIconPath = "{{ asset('bundles/webprofiler/images/profiler/left-arrow.png') }}",
-                rightIconPath = "{{ asset('bundles/webprofiler/images/profiler/right-arrow.png') }}",
+            var upIconPath = "{{ asset('bundles/webprofiler/images/profiler/up-arrow.png') }}",
+                downIconPath = "{{ asset('bundles/webprofiler/images/profiler/down-arrow.png') }}",
                 menuItems = document.getElementById('menu_profiler').getElementsByTagName('LI'),
                 displayState = 'none',
                 elem;
 
-            if (document.getElementById('minimizePanelIcon').src.indexOf('left-arrow.png') != -1) {
+            if (document.getElementById('minimizePanelIcon').src.indexOf('up-arrow.png') != -1) {
                 document.getElementById('navigation').style.width = '60px';
                 document.getElementById('resume').style.marginLeft = '60px';
-                document.getElementById('collector_content').style.marginLeft = '60px';
-                document.getElementById('minimizePanelIcon').src = rightIconPath;
+                document.getElementById('collector_content').style.marginLeft = '0px';
+                document.getElementById('minimizePanelIcon').src = downIconPath;
                 displayState = 'none';
             } else {
                 document.getElementById('navigation').style.width = '250px';
                 document.getElementById('resume').style.marginLeft = '250px';
                 document.getElementById('collector_content').style.marginLeft = '250px';
-                document.getElementById('minimizePanelIcon').src = leftIconPath;
+                document.getElementById('minimizePanelIcon').src = upIconPath;
                 displayState = 'block';
             }
 
@@ -87,31 +108,61 @@
             document.getElementById('adminBar').style.display = displayState;
 
             for (elem in menuItems) {
+                if (elem != menuItems.length - 1) {
+                    if (typeof(menuItems[elem].style) != 'undefined') {
+                        menuItems[elem].style.display = displayState;
+                    }
+                } else {
+                    if (displayState == 'none') {
+                        menuItems[elem].style.borderTopLeftRadius = '16px';
+                        menuItems[elem].children[0].title = 'Restore toolbar';
+                    } else {
+                        menuItems[elem].style.borderTopLeftRadius = '0px';
+                        menuItems[elem].children[0].title = 'Minimize toolbar';
+                    }
+
+                }
+
                 if (typeof(menuItems[elem].getElementsByClassName) !='undefined' &&
                     menuItems[elem].getElementsByClassName('count').length > 0) {
                     menuItems[elem].getElementsByClassName('count')[0].style.display = displayState;
                 }
             }
 
+            setCookie('sf2_profiler_leftmenu', displayState, 365);
+
+            try {
+                canvasAutoUpdateOnThresholdChange(null);
+            } catch (err) {
+
+            }
+
             return false;
         }
 
-        window.setTimeout(function (){
+        window.setTimeout(function() {
             var menuItems = document.getElementById('menu_profiler').getElementsByTagName('LI'),
-                elem, value;
+                elem, value, child;
+
+            if (getCookie('sf2_profiler_leftmenu') != null) {
+                if (getCookie('sf2_profiler_leftmenu') == 'none') {
+                    minimizeLeftPanels();
+                }
+            }
 
             for (elem in menuItems) {
                 if (typeof(menuItems[elem].children) != 'undefined' &&
                     menuItems[elem].children.length > 0) {
+                    child = menuItems[elem].children[0]
 
-                    if (menuItems[elem].children[0].getAttribute('title') == '' ||
-                        menuItems[elem].children[0].getAttribute('title') == null) {
-                        value = menuItems[elem].children[0].text.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-                        menuItems[elem].children[0].setAttribute('title', value);
+                    if (child.getAttribute('title') == '' ||
+                        child.getAttribute('title') == null) {
+                        value = child.text.replace(/^\s+/g, '').split('\n')[0].replace(/\s+$/g, '');
+                        child.setAttribute('title', value);
                     }
                 }
             }
-        }, 200);
+        }, 25);
 
     //]]></script>
 {% endblock %}
