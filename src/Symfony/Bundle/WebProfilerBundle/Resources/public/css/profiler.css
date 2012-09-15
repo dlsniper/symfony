@@ -144,9 +144,9 @@ abbr {
 
 #menu_profiler li a span.label {
     display: block;
-    padding: 20px 20px 16px 65px;
-    min-height: 24px;
-    _height: 24px;
+    padding: 20px 0px 16px 65px;
+    min-height: 16px;
+    overflow: hidden;
 }
 
 #menu_profiler li a span.icon {

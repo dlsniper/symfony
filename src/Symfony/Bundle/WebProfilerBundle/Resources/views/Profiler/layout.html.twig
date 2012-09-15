@@ -43,6 +43,14 @@
                                     </li>
                                 {% endif %}
                             {% endfor %}
+                            <li class="minimize">
+                                <a href="javascript:minimizeLeftPanels();void(0);">
+                                    <span class="label">
+                                        <span class="icon"><img id="minimizePanelIcon" src="{{ asset('bundles/webprofiler/images/profiler/left-arrow.png') }}" alt="" /></span>
+                                        <strong>Minimize</strong>
+                                    </span>
+                                </a>
+                            </li>
                         </ul>
                     {% endif %}
                     {% render 'WebProfilerBundle:Profiler:searchBar' %}
@@ -51,4 +59,59 @@
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">//<![CDATA[
+
+        function minimizeLeftPanels() {
+            var leftIconPath = "{{ asset('bundles/webprofiler/images/profiler/left-arrow.png') }}",
+                rightIconPath = "{{ asset('bundles/webprofiler/images/profiler/right-arrow.png') }}",
+                menuItems = document.getElementById('menu_profiler').getElementsByTagName('LI'),
+                displayState = 'none',
+                elem;
+
+            if (document.getElementById('minimizePanelIcon').src.indexOf('left-arrow.png') != -1) {
+                document.getElementById('navigation').style.width = '60px';
+                document.getElementById('resume').style.marginLeft = '60px';
+                document.getElementById('collector_content').style.marginLeft = '60px';
+                document.getElementById('minimizePanelIcon').src = rightIconPath;
+                displayState = 'none';
+            } else {
+                document.getElementById('navigation').style.width = '250px';
+                document.getElementById('resume').style.marginLeft = '250px';
+                document.getElementById('collector_content').style.marginLeft = '250px';
+                document.getElementById('minimizePanelIcon').src = leftIconPath;
+                displayState = 'block';
+            }
+
+            document.getElementById('searchBar').style.display = displayState;
+            document.getElementById('adminBar').style.display = displayState;
+
+            for (elem in menuItems) {
+                if (typeof(menuItems[elem].getElementsByClassName) !='undefined' &&
+                    menuItems[elem].getElementsByClassName('count').length > 0) {
+                    menuItems[elem].getElementsByClassName('count')[0].style.display = displayState;
+                }
+            }
+
+            return false;
+        }
+
+        window.setTimeout(function (){
+            var menuItems = document.getElementById('menu_profiler').getElementsByTagName('LI'),
+                elem, value;
+
+            for (elem in menuItems) {
+                if (typeof(menuItems[elem].children) != 'undefined' &&
+                    menuItems[elem].children.length > 0) {
+
+                    if (menuItems[elem].children[0].getAttribute('title') == '' ||
+                        menuItems[elem].children[0].getAttribute('title') == null) {
+                        value = menuItems[elem].children[0].text.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+                        menuItems[elem].children[0].setAttribute('title', value);
+                    }
+                }
+            }
+        }, 200);
+
+    //]]></script>
 {% endblock %}
