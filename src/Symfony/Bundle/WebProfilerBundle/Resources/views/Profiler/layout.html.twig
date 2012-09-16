@@ -2,7 +2,9 @@
 
 {% block body %}
 
-    <div id="content" style="margin-bottom: 20px;">
+    {% render 'WebProfilerBundle:Profiler:toolbar' with { 'token': token, 'position': 'normal' } %}
+
+    <div id="content">
         {% include 'WebProfilerBundle:Profiler:header.html.twig' only %}
 
         <div id="main">
@@ -44,7 +46,7 @@
                             <li class="minimize">
                                 <a href="javascript:void(0);" title="Minimize toolbar" onclick="return minimizeLeftPanels();">
                                     <span class="label">
-                                        <span class="icon"><img id="minimizePanelIcon" src="{{ asset('bundles/webprofiler/images/profiler/up-arrow.png') }}" alt="" /></span>
+                                        <span class="icon"><img id="minimizePanelIcon" src="{{ asset('bundles/webprofiler/images/profiler/left-arrow.png') }}" alt="" /></span>
                                         <strong>Minimize</strong>
                                     </span>
                                 </a>
@@ -60,76 +62,37 @@
 
     <script type="text/javascript">//<![CDATA[
 
-        function setCookie(name, value, timeout) {
-            var exdate=new Date();
-            exdate.setDate(exdate.getDate() + timeout);
-            value = value + ((timeout==null) ? "" : "; expires="+exdate.toUTCString());
-
-            document.cookie = name + "=" + value;
-        }
-
-        function getCookie(name) {
-            var i, x, y, cookies = document.cookie.split(";");
-
-            for (i=0;i<cookies.length;i++) {
-                x = cookies[i].substr(0,cookies[i].indexOf("="));
-                y = cookies[i].substr(cookies[i].indexOf("=")+1);
-                x = x.replace(/^\s+|\s+$/g,"");
-                if (x == name) {
-                    return y;
-                }
-            }
-
-            return null;
-        }
-
         function minimizeLeftPanels() {
-            var upIconPath = "{{ asset('bundles/webprofiler/images/profiler/up-arrow.png') }}",
-                downIconPath = "{{ asset('bundles/webprofiler/images/profiler/down-arrow.png') }}",
+            var leftIconPath = "{{ asset('bundles/webprofiler/images/profiler/left-arrow.png') }}",
+                rightIconPath = "{{ asset('bundles/webprofiler/images/profiler/right-arrow.png') }}",
                 menuItems = document.getElementById('menu_profiler').getElementsByTagName('LI'),
-                displayState = 'none',
-                elem;
+                displayState = 'none', elem, cookie = Sfjs.getPreference('menu/displayState');
 
-            if (document.getElementById('minimizePanelIcon').src.indexOf('up-arrow.png') != -1) {
-                document.getElementById('navigation').style.width = '60px';
-                document.getElementById('resume').style.marginLeft = '60px';
-                document.getElementById('collector_content').style.marginLeft = '0px';
-                document.getElementById('minimizePanelIcon').src = downIconPath;
-                displayState = 'none';
-            } else {
+            if (document.getElementById('minimizePanelIcon').src.indexOf(leftIconPath) == -1) {
                 document.getElementById('navigation').style.width = '250px';
                 document.getElementById('resume').style.marginLeft = '250px';
                 document.getElementById('collector_content').style.marginLeft = '250px';
-                document.getElementById('minimizePanelIcon').src = upIconPath;
+                document.getElementById('minimizePanelIcon').src = leftIconPath;
                 displayState = 'block';
+            } else {
+                document.getElementById('navigation').style.width = '60px';
+                document.getElementById('resume').style.marginLeft = '60px';
+                document.getElementById('collector_content').style.marginLeft = '60px';
+                document.getElementById('minimizePanelIcon').src = rightIconPath;
+                displayState = 'none';
             }
 
             document.getElementById('searchBar').style.display = displayState;
             document.getElementById('adminBar').style.display = displayState;
 
             for (elem in menuItems) {
-                if (elem != menuItems.length - 1) {
-                    if (typeof(menuItems[elem].style) != 'undefined') {
-                        menuItems[elem].style.display = displayState;
-                    }
-                } else {
-                    if (displayState == 'none') {
-                        menuItems[elem].style.borderTopLeftRadius = '16px';
-                        menuItems[elem].children[0].title = 'Restore toolbar';
-                    } else {
-                        menuItems[elem].style.borderTopLeftRadius = '0px';
-                        menuItems[elem].children[0].title = 'Minimize toolbar';
-                    }
-
-                }
-
                 if (typeof(menuItems[elem].getElementsByClassName) !='undefined' &&
                     menuItems[elem].getElementsByClassName('count').length > 0) {
                     menuItems[elem].getElementsByClassName('count')[0].style.display = displayState;
                 }
             }
 
-            setCookie('sf2_profiler_leftmenu', displayState, 365);
+            Sfjs.setPreference('menu/displayState', displayState);
 
             try {
                 canvasAutoUpdateOnThresholdChange(null);
@@ -142,12 +105,10 @@
 
         window.setTimeout(function() {
             var menuItems = document.getElementById('menu_profiler').getElementsByTagName('LI'),
-                elem, value, child;
+                elem, value, child, displayState = Sfjs.getPreference('menu/displayState');
 
-            if (getCookie('sf2_profiler_leftmenu') != null) {
-                if (getCookie('sf2_profiler_leftmenu') == 'none') {
-                    minimizeLeftPanels();
-                }
+            if (displayState == 'none') {
+                minimizeLeftPanels();
             }
 
             for (elem in menuItems) {
