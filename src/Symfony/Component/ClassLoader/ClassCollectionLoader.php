@@ -147,8 +147,8 @@ class ClassCollectionLoader
         $output = '';
         $inNamespace = false;
         $tokens = token_get_all($source);
-
-        for ($i = 0, $max = count($tokens); $i < $max; $i++) {
+$max = count($tokens);
+        for ($i = 0; $i < $max; $i++) {
             $token = $tokens[$i];
             if (is_string($token)) {
                 $output .= $token;
